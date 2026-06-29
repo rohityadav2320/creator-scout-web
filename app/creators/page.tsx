@@ -96,12 +96,20 @@ export default function CreatorsPage() {
   const pushToSheet = async () => {
     const toSend = filtered.filter(c => selected.has(c.reel_url));
     if (!toSend.length) return;
-    const url = process.env.NEXT_PUBLIC_GSHEET_URL;
-    if (!url) { setSheetMsg("❌ Google Sheet not connected."); return; }
     try {
-      const r = await fetch(url, { method: "POST", body: JSON.stringify({ creators: toSend.map(c => ({ name: c.username, username: c.username, email: c.contact_email || "", language: "" })) }), headers: { "Content-Type": "application/json" } });
-      if (r.ok) { setSheetMsg(`✅ Sent ${toSend.length} to sheet.`); setSelected(new Set()); }
-      else setSheetMsg("❌ Sheet responded with error.");
+      const r = await fetch("/api/sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ creators: toSend.map(c => ({ name: c.username, username: c.username, email: c.contact_email || "", language: "" })) }),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        const added = data.added ?? toSend.length;
+        setSheetMsg(`✅ Sent ${added} to sheet.`);
+        setSelected(new Set());
+      } else {
+        setSheetMsg("❌ Sheet responded with error.");
+      }
     } catch { setSheetMsg("❌ Could not reach sheet."); }
     setTimeout(() => setSheetMsg(""), 4000);
   };
@@ -134,11 +142,9 @@ export default function CreatorsPage() {
           <button onClick={saveChanges} disabled={saving || !Object.keys(edited).length} style={{ background: Object.keys(edited).length ? "#6366f1" : "#1e1e2e", border: "none", borderRadius: 8, padding: "8px 16px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
             {saving ? "Saving..." : `💾 Save Changes${Object.keys(edited).length ? ` (${Object.keys(edited).length})` : ""}`}
           </button>
-          {process.env.NEXT_PUBLIC_GSHEET_URL && (
-            <button onClick={pushToSheet} disabled={selected.size === 0} style={{ background: selected.size ? "#0f2a1a" : "#111118", border: `1px solid ${selected.size ? "#166534" : "#1e1e2e"}`, borderRadius: 8, padding: "8px 16px", color: selected.size ? "#a3e635" : "#6b6b8a", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-              📤 Send {selected.size > 0 ? selected.size : ""} → Sheet
-            </button>
-          )}
+          <button onClick={pushToSheet} disabled={selected.size === 0} style={{ background: selected.size ? "#0f2a1a" : "#111118", border: `1px solid ${selected.size ? "#166534" : "#1e1e2e"}`, borderRadius: 8, padding: "8px 16px", color: selected.size ? "#a3e635" : "#6b6b8a", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            📤 Send {selected.size > 0 ? selected.size : ""} → Sheet
+          </button>
           <button onClick={downloadCSV} style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 8, padding: "8px 16px", color: "#9999bb", fontSize: 13, cursor: "pointer" }}>⬇ CSV</button>
         </div>
       </div>
