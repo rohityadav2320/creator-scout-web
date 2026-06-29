@@ -1,6 +1,6 @@
 "use client";
 
-const MAC_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Mac";
+const MAC_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Mac.zip";
 const WIN_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Windows.exe";
 
 function Step({ num, title, desc, warn }: { num: string; title: string; desc: React.ReactNode; warn?: React.ReactNode }) {
@@ -90,12 +90,12 @@ export default function InstallPage() {
           title="Open the file"
           desc={
             <span>
-              <b style={{ color: "#e2e2f0" }}>On Mac:</b> Double-click the file.<br />
-              If you see <i>&quot;cannot be opened because Apple cannot check it&quot;</i> →<br />
-              &nbsp;&nbsp;→ <b style={{ color: "#e2e2f0" }}>Right-click</b> the file → click <b style={{ color: "#e2e2f0" }}>Open</b> → click <b style={{ color: "#e2e2f0" }}>Open</b> again in the popup.<br /><br />
-              <b style={{ color: "#e2e2f0" }}>On Windows:</b> Double-click the file.<br />
-              If you see a blue <i>&quot;Windows protected your PC&quot;</i> screen →<br />
-              &nbsp;&nbsp;→ click <b style={{ color: "#e2e2f0" }}>More info</b> → then click <b style={{ color: "#e2e2f0" }}>Run anyway</b>.
+              <b style={{ color: "#e2e2f0" }}>On Mac:</b><br />
+              1. Double-click <b style={{ color: "#e2e2f0" }}>CreatorScout-Agent-Mac.zip</b> to unzip it.<br />
+              2. Open the folder → double-click <b style={{ color: "#e2e2f0" }}>Start CreatorScout.command</b><br />
+              3. If blocked → <b style={{ color: "#e2e2f0" }}>Right-click</b> → <b style={{ color: "#e2e2f0" }}>Open</b> → <b style={{ color: "#e2e2f0" }}>Open</b><br /><br />
+              <b style={{ color: "#e2e2f0" }}>On Windows:</b> Double-click the <b style={{ color: "#e2e2f0" }}>.exe</b> file.<br />
+              If blue screen appears → <b style={{ color: "#e2e2f0" }}>More info</b> → <b style={{ color: "#e2e2f0" }}>Run anyway</b>.
             </span>
           }
           warn={<span>A black terminal window will open — <b>don&apos;t close it</b>. This is normal. Keep it running in the background.</span>}
