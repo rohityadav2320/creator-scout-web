@@ -48,7 +48,7 @@ export default function CreatorsPage() {
     const { data } = await supabase
       .from("reels")
       .select("reel_url,username,followers,engagement_rate,contact_email,bio,category,status,notes,scraped_by")
-      .order("followers", { ascending: false })
+      .order("first_scraped", { ascending: false })
       .limit(5000);
     if (data) {
       const seen = new Set<string>();
