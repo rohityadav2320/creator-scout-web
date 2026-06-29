@@ -52,6 +52,7 @@ export default function ScrapePage() {
   // Common
   const [maxCreators, setMaxCreators] = useState("50");
   const [minFollowers, setMinFollowers] = useState("10000");
+  const [maxFollowers, setMaxFollowers] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
@@ -93,6 +94,7 @@ export default function ScrapePage() {
         hashtags: hashtags.split(/[,\s]+/).map(h => h.trim().replace(/^#/, "")).filter(Boolean),
         max: parseInt(maxCreators) || 50,
         min_followers: parseInt(minFollowers) || 0,
+        ...(maxFollowers ? { max_followers: parseInt(maxFollowers) } : {}),
         enrich: enrich,
       };
     } else if (scrapeType === "reference") {
@@ -108,6 +110,7 @@ export default function ScrapePage() {
         ...params,
         max: parseInt(maxCreators) || 50,
         min_followers: parseInt(minFollowers) || 0,
+        ...(maxFollowers ? { max_followers: parseInt(maxFollowers) } : {}),
         ...(ft.length ? { feed_hashtags: ft } : {}),
       };
     }
@@ -201,6 +204,10 @@ export default function ScrapePage() {
                 <label style={labelStyle}>Min followers</label>
                 <input type="number" value={minFollowers} onChange={e => setMinFollowers(e.target.value)} style={inputStyle} />
               </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Max followers</label>
+                <input type="number" value={maxFollowers} onChange={e => setMaxFollowers(e.target.value)} placeholder="No limit" style={inputStyle} />
+              </div>
             </div>
             <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setEnrich(!enrich)}>
               <div style={{
@@ -260,6 +267,10 @@ export default function ScrapePage() {
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Min followers</label>
                 <input type="number" value={minFollowers} onChange={e => setMinFollowers(e.target.value)} style={inputStyle} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Max followers</label>
+                <input type="number" value={maxFollowers} onChange={e => setMaxFollowers(e.target.value)} placeholder="No limit" style={inputStyle} />
               </div>
             </div>
           </>
