@@ -128,7 +128,12 @@ export default function ScrapePage() {
 
     setSubmitting(false);
     if (err) { setError(err.message); return; }
-    setSuccess(`✅ Job queued! Make sure your agent app is open — it will pick this up automatically.`);
+    const isOnline = onlineAgents.some(a => a.label.toLowerCase() === yourName.trim().toLowerCase());
+    if (isOnline) {
+      setSuccess(`✅ Job queued! Your agent is running — scrape will start in a few seconds.`);
+    } else {
+      setError(`⚠️ Job queued but your agent is NOT running on your laptop! Open the agent app first — go to "Install Agent" to download it. The job will wait until your agent is online.`);
+    }
     setHashtags(""); setFeedHashtags(""); setSeeds(""); setCategory("");
   };
 
