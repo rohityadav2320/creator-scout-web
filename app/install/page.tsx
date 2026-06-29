@@ -92,8 +92,13 @@ export default function InstallPage() {
             <span>
               <b style={{ color: "#e2e2f0" }}>On Mac:</b><br />
               1. Double-click <b style={{ color: "#e2e2f0" }}>CreatorScout-Agent-Mac.zip</b> to unzip it.<br />
-              2. Open the folder → double-click <b style={{ color: "#e2e2f0" }}>Start CreatorScout.command</b><br />
-              3. If blocked → <b style={{ color: "#e2e2f0" }}>Right-click</b> → <b style={{ color: "#e2e2f0" }}>Open</b> → <b style={{ color: "#e2e2f0" }}>Open</b><br /><br />
+              2. Open the folder that appears.<br />
+              3. Press <b style={{ color: "#e2e2f0" }}>Cmd + Space</b>, type <b style={{ color: "#e2e2f0" }}>Terminal</b>, press Enter.<br />
+              4. Copy-paste this command into Terminal and press Enter:<br /><br />
+              <code style={{ display: "block", background: "#0d0d14", border: "1px solid #2a2a3a", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#a3e635", wordBreak: "break-all" as const, userSelect: "all" as const }}>
+                xattr -cr ~/Downloads/CreatorScout-Agent-Mac
+              </code><br />
+              5. Then double-click <b style={{ color: "#e2e2f0" }}>Start CreatorScout.command</b> — it will open!<br /><br />
               <b style={{ color: "#e2e2f0" }}>On Windows:</b> Double-click the <b style={{ color: "#e2e2f0" }}>.exe</b> file.<br />
               If blue screen appears → <b style={{ color: "#e2e2f0" }}>More info</b> → <b style={{ color: "#e2e2f0" }}>Run anyway</b>.
             </span>
