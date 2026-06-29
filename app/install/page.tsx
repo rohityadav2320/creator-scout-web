@@ -77,19 +77,20 @@ export default function InstallPage() {
           Move the downloaded file <b style={{ color: "#fff" }}>CreatorScout-Agent-Mac</b> into that folder.</span>
         } />
 
-        <Step num={3} title="Save your name in a file" desc={
-          <span>Open <b style={{ color: "#fff" }}>TextEdit</b> → go to <b style={{ color: "#fff" }}>Format → Make Plain Text</b>.<br />
-          Type just your name (e.g. <b style={{ color: "#fff" }}>Priya</b>) and save the file as <b style={{ color: "#fff" }}>agent_account.txt</b> inside the <b style={{ color: "#fff" }}>CreatorScout</b> folder.</span>
-        } />
-
-        <Step num={4} title="Unblock and run (Terminal)" desc={
+        <Step num={3} title="Unblock and run (Terminal)" desc={
           <span>
             Open <b style={{ color: "#fff" }}>Terminal</b> (Cmd+Space → type Terminal → Enter).<br />
             Copy all 3 lines below and paste into Terminal, then press Enter:
             <CopyBlock text={MAC_COMMANDS} />
             <br />
-            The first two lines unblock the app (one-time only). The third line runs it.<br /><br />
-            You&apos;ll see: <span style={{ background: "#0d0d14", border: "1px solid #1e1e2e", borderRadius: 4, padding: "2px 8px", fontFamily: "monospace", fontSize: 12, color: "#a3e635" }}>Agent &apos;YourName&apos; online. Watching for jobs…</span>
+            The first two lines unblock the app (one-time only). The third line runs it.
+          </span>
+        } />
+
+        <Step num={4} title="Type your name when asked" desc={
+          <span>
+            The app will ask: <span style={{ background: "#0d0d14", border: "1px solid #1e1e2e", borderRadius: 4, padding: "2px 8px", fontFamily: "monospace", fontSize: 12, color: "#a3e635" }}>Enter your name:</span><br /><br />
+            Type your name (e.g. <b style={{ color: "#fff" }}>Priya</b>) and press Enter. It&apos;s saved — you won&apos;t be asked again.
           </span>
         } />
 
