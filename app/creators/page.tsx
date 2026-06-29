@@ -201,7 +201,7 @@ export default function CreatorsPage() {
                   <input type="checkbox" onChange={e => setSelected(e.target.checked ? new Set(filtered.map(c => c.reel_url)) : new Set())}
                     checked={selected.size === filtered.length && filtered.length > 0} style={{ cursor: "pointer" }} />
                 </th>
-                {["Status", "Username", "Followers", "ER %", "Email", "Category", "Notes", "Agent", "IG Account", "Profile", "Reel"].map(h => (
+                {["Status", "Username", "Profile", "Reel", "Followers", "ER %", "Email", "Category", "Notes", "Agent", "IG Account"].map(h => (
                   <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: 11, color: "#6b6b8a", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
@@ -229,6 +229,14 @@ export default function CreatorsPage() {
                     <td style={{ padding: "10px 14px" }}>
                       <span style={{ color: "#818cf8", fontWeight: 600, fontSize: 13 }}>@{c.username}</span>
                     </td>
+                    {/* Profile & Reel — right next to username */}
+                    <td style={{ padding: "10px 14px" }}>
+                      <a href={`https://instagram.com/${c.username}`} target="_blank" rel="noopener noreferrer"
+                        style={{ color: "#6366f1", fontSize: 12 }}>Profile ↗</a>
+                    </td>
+                    <td style={{ padding: "10px 14px" }}>
+                      {c.reel_url ? <a href={c.reel_url} target="_blank" rel="noopener noreferrer" style={{ color: "#6b6b8a", fontSize: 12 }}>Reel ↗</a> : "—"}
+                    </td>
                     <td style={{ padding: "10px 14px", fontSize: 13, color: "#e2e2f0", fontWeight: 500 }}>{fmt(c.followers)}</td>
                     <td style={{ padding: "10px 14px", fontSize: 13, color: c.engagement_rate > 3 ? "#a3e635" : "#e2e2f0" }}>
                       {c.engagement_rate ? `${c.engagement_rate.toFixed(1)}%` : "—"}
@@ -255,13 +263,6 @@ export default function CreatorsPage() {
                       {c.scraped_from ? (
                         <span style={{ background: "#0f1a2a", border: "1px solid #1e3a5a", borderRadius: 6, padding: "2px 8px", color: "#60a5fa", fontSize: 12 }}>@{c.scraped_from}</span>
                       ) : <span style={{ color: "#3a3a5a", fontSize: 12 }}>—</span>}
-                    </td>
-                    <td style={{ padding: "10px 14px" }}>
-                      <a href={`https://instagram.com/${c.username}`} target="_blank" rel="noopener noreferrer"
-                        style={{ color: "#6366f1", fontSize: 12 }}>Profile ↗</a>
-                    </td>
-                    <td style={{ padding: "10px 14px" }}>
-                      {c.reel_url ? <a href={c.reel_url} target="_blank" rel="noopener noreferrer" style={{ color: "#6b6b8a", fontSize: 12 }}>Reel ↗</a> : "—"}
                     </td>
                   </tr>
                 );
