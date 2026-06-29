@@ -22,6 +22,7 @@ type Creator = {
   status: string;
   notes: string;
   scraped_by: string;
+  scraped_from: string;
 };
 
 function fmt(n: number) {
@@ -47,7 +48,7 @@ export default function CreatorsPage() {
   const load = async () => {
     const { data } = await supabase
       .from("reels")
-      .select("reel_url,username,followers,engagement_rate,contact_email,bio,category,status,notes,scraped_by")
+      .select("reel_url,username,followers,engagement_rate,contact_email,bio,category,status,notes,scraped_by,scraped_from")
       .order("first_scraped", { ascending: false })
       .limit(5000);
     if (data) {
@@ -200,14 +201,14 @@ export default function CreatorsPage() {
                   <input type="checkbox" onChange={e => setSelected(e.target.checked ? new Set(filtered.map(c => c.reel_url)) : new Set())}
                     checked={selected.size === filtered.length && filtered.length > 0} style={{ cursor: "pointer" }} />
                 </th>
-                {["Status", "Username", "Followers", "ER %", "Email", "Category", "Notes", "Profile", "Reel"].map(h => (
+                {["Status", "Username", "Followers", "ER %", "Email", "Category", "Notes", "Agent", "IG Account", "Profile", "Reel"].map(h => (
                   <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: 11, color: "#6b6b8a", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={10} style={{ padding: 32, textAlign: "center", color: "#6b6b8a", fontSize: 14 }}>No creators match filters.</td></tr>
+                <tr><td colSpan={12} style={{ padding: 32, textAlign: "center", color: "#6b6b8a", fontSize: 14 }}>No creators match filters.</td></tr>
               ) : filtered.map((c, i) => {
                 const status = getVal(c, "status") || "To Contact";
                 const notes = getVal(c, "notes");
@@ -242,6 +243,18 @@ export default function CreatorsPage() {
                         placeholder="Add note..." style={{ ...inputStyle, background: notes ? "#1a1a28" : "transparent", border: "1px solid transparent", borderRadius: 6, padding: "4px 8px" }}
                         onFocus={e => (e.target.style.borderColor = "#3a3a5a")}
                         onBlur={e => (e.target.style.borderColor = "transparent")} />
+                    </td>
+                    {/* Agent */}
+                    <td style={{ padding: "10px 14px" }}>
+                      {c.scraped_by ? (
+                        <span style={{ background: "#1a1528", border: "1px solid #3a2a5a", borderRadius: 6, padding: "2px 8px", color: "#c084fc", fontSize: 12, fontWeight: 600 }}>{c.scraped_by}</span>
+                      ) : <span style={{ color: "#3a3a5a", fontSize: 12 }}>—</span>}
+                    </td>
+                    {/* IG Account */}
+                    <td style={{ padding: "10px 14px" }}>
+                      {c.scraped_from ? (
+                        <span style={{ background: "#0f1a2a", border: "1px solid #1e3a5a", borderRadius: 6, padding: "2px 8px", color: "#60a5fa", fontSize: 12 }}>@{c.scraped_from}</span>
+                      ) : <span style={{ color: "#3a3a5a", fontSize: 12 }}>—</span>}
                     </td>
                     <td style={{ padding: "10px 14px" }}>
                       <a href={`https://instagram.com/${c.username}`} target="_blank" rel="noopener noreferrer"
