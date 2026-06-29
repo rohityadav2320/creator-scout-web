@@ -1,65 +1,93 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+
+function StatCard({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  return (
+    <div style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 12, padding: "24px 28px", flex: 1, minWidth: 160 }}>
+      <div style={{ fontSize: 13, color: "#6b6b8a", marginBottom: 8, fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 32, fontWeight: 700, color: color || "#fff", lineHeight: 1 }}>{value}</div>
+    </div>
+  );
+}
 
 export default function Home() {
+  const [stats, setStats] = useState({ creators: 0, jobs: 0, todayJobs: 0, agents: 0 });
+
+  useEffect(() => {
+    const load = async () => {
+      const [{ count: creators }, { count: jobs }, { data: agentData }, { count: todayJobs }] = await Promise.all([
+        supabase.from("reels").select("*", { count: "exact", head: true }),
+        supabase.from("jobs").select("*", { count: "exact", head: true }),
+        supabase.from("agents").select("last_seen"),
+        supabase.from("jobs").select("*", { count: "exact", head: true })
+          .gte("created_at", new Date(Date.now() - 86400000).toISOString()),
+      ]);
+      const online = (agentData || []).filter((a: { last_seen: string }) =>
+        a.last_seen && Date.now() - new Date(a.last_seen).getTime() < 40000
+      ).length;
+      setStats({ creators: creators || 0, jobs: jobs || 0, todayJobs: todayJobs || 0, agents: online });
+    };
+    load();
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ maxWidth: 900 }}>
+      <div style={{ marginBottom: 40 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 6 }}>Welcome to Creator Scout 👋</h1>
+        <p style={{ color: "#6b6b8a", fontSize: 15 }}>Discover Instagram creators for Vidrow — fast, automated, zero manual effort.</p>
+      </div>
+
+      <div style={{ display: "flex", gap: 16, marginBottom: 40, flexWrap: "wrap" }}>
+        <StatCard label="Total Creators" value={stats.creators.toLocaleString()} color="#818cf8" />
+        <StatCard label="Total Jobs" value={stats.jobs} />
+        <StatCard label="Jobs Today" value={stats.todayJobs} />
+        <StatCard label="Agents Online" value={stats.agents} color={stats.agents > 0 ? "#a3e635" : "#6b6b8a"} />
+      </div>
+
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: "#fff", marginBottom: 16 }}>Quick Actions</h2>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {[
+            { href: "/scrape", label: "＋ New Scrape", desc: "Queue a new scraping job", accent: true },
+            { href: "/creators", label: "◫ View Creators", desc: "Browse & export creators", accent: false },
+            { href: "/jobs", label: "≡ View Jobs", desc: "Check scraping progress", accent: false },
+            { href: "/install", label: "↓ Install Agent", desc: "Set up on your laptop", accent: false },
+          ].map(({ href, label, desc, accent }) => (
+            <Link key={href} href={href} style={{ textDecoration: "none" }}>
+              <div style={{
+                background: accent ? "#6366f1" : "#111118",
+                border: `1px solid ${accent ? "#6366f1" : "#1e1e2e"}`,
+                borderRadius: 10, padding: "16px 20px", cursor: "pointer", minWidth: 180,
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "#fff", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 12, color: accent ? "#c7d2fe" : "#6b6b8a" }}>{desc}</div>
+              </div>
+            </Link>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      <div style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 12, padding: 24 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: "#fff", marginBottom: 16 }}>How it works</h2>
+        {[
+          ["1", "Agent runs on your laptop", "Double-click the app — connects automatically"],
+          ["2", "Queue a scrape", "Pick hashtags or trained feed, set count, click Scrape"],
+          ["3", "Agent runs it", "Chrome opens, scrapes Instagram, saves creators to DB"],
+          ["4", "Browse & export", "Filter creators, export to Excel, share with team"],
+        ].map(([num, title, desc]) => (
+          <div key={num} style={{ display: "flex", gap: 16, padding: "12px 0", borderBottom: "1px solid #1a1a28" }}>
+            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#6366f115", border: "1px solid #6366f130", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#818cf8", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>
+              {num}
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e2f0", marginBottom: 2 }}>{title}</div>
+              <div style={{ fontSize: 13, color: "#6b6b8a" }}>{desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
