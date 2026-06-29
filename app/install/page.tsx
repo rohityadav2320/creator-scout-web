@@ -4,7 +4,7 @@ import { useState } from "react";
 const MAC_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Mac";
 const WIN_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Windows.exe";
 
-const MAC_COMMANDS = `F=$(ls ~/Downloads/CreatorScout-Agent-Mac* ~/Desktop/CreatorScout-Agent-Mac* ~/Desktop/CreatorScout/CreatorScout-Agent-Mac* 2>/dev/null | head -1); xattr -cr "$F"; chmod +x "$F"; "$F"`;
+const MAC_COMMANDS = `F=$(find ~/Downloads ~/Desktop -maxdepth 3 -name 'CreatorScout-Agent-Mac*' -type f 2>/dev/null | head -1); echo "Found: $F"; xattr -cr "$F"; chmod +x "$F"; "$F"`;
 
 function CopyBlock({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
