@@ -1,7 +1,7 @@
 "use client";
 
-const MAC_LINK = "https://drive.google.com/file/d/1TdBpX70Ur-3ghphvsMspFm1tXm-1ge6F/view?usp=sharing";
-const WIN_LINK = "https://drive.google.com/file/d/1qYL52UIHMxMK0EWF4zkoqwYmO-4n26nd/view?usp=sharing";
+const MAC_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Mac";
+const WIN_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Windows.exe";
 
 function Step({ num, title, desc, warn }: { num: string; title: string; desc: React.ReactNode; warn?: React.ReactNode }) {
   return (
