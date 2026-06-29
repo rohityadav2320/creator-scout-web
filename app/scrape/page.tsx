@@ -103,6 +103,8 @@ export default function ScrapePage() {
         seeds: seeds.split(/[,\s]+/).map(s => s.trim().replace(/^@/, "")).filter(Boolean),
         max: parseInt(maxCreators) || 100,
         depth: depth,
+        min_followers: parseInt(minFollowers) || 0,
+        ...(maxFollowers ? { max_followers: parseInt(maxFollowers) } : {}),
       };
     } else {
       const ft = feedHashtags.split(/[,\s]+/).map(h => h.trim().replace(/^#/, "")).filter(Boolean);
@@ -242,6 +244,16 @@ export default function ScrapePage() {
                   <option value={1}>1 — one hop (recommended)</option>
                   <option value={2}>2 — two hops (slower)</option>
                 </select>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Min followers</label>
+                <input type="number" value={minFollowers} onChange={e => setMinFollowers(e.target.value)} style={inputStyle} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Max followers</label>
+                <input type="number" value={maxFollowers} onChange={e => setMaxFollowers(e.target.value)} placeholder="No limit" style={inputStyle} />
               </div>
             </div>
           </>
