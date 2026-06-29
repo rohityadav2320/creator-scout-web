@@ -79,7 +79,7 @@ export default function ScrapePage() {
 
   const handleSubmit = async () => {
     setError(""); setSuccess("");
-    if (!agent) { setError("Select an agent first."); return; }
+    if (!yourName.trim()) { setError("Enter your name first."); return; }
     if (!igAccount.trim()) { setError("Enter an Instagram account."); return; }
     if (scrapeType === "hashtag" && !hashtags.trim()) { setError("Enter at least one hashtag."); return; }
     if (scrapeType === "reference" && !seeds.trim()) { setError("Enter at least one seed creator username."); return; }
@@ -121,14 +121,14 @@ export default function ScrapePage() {
       type: scrapeType,
       status: "queued",
       params,
-      created_by: yourName || agent,
-      account_label: agent,
+      created_by: yourName.trim(),
+      account_label: yourName.trim(),
       created_at: new Date().toISOString(),
     });
 
     setSubmitting(false);
     if (err) { setError(err.message); return; }
-    setSuccess(`✅ Job queued! ${agent}'s agent will pick it up shortly.`);
+    setSuccess(`✅ Job queued! Make sure your agent app is open — it will pick this up automatically.`);
     setHashtags(""); setFeedHashtags(""); setSeeds(""); setCategory("");
   };
 
@@ -150,12 +150,15 @@ export default function ScrapePage() {
         {onlineAgents.length > 0 ? (
           <>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#a3e635", boxShadow: "0 0 8px #a3e635", flexShrink: 0 }} />
-            <span style={{ fontSize: 14, color: "#a3e635", fontWeight: 500 }}>{onlineAgents.map(a => a.label).join(", ")} online</span>
+            <span style={{ fontSize: 14, color: "#a3e635", fontWeight: 500 }}>
+              {onlineAgents.map(a => a.label).join(", ")} {onlineAgents.length === 1 ? "is" : "are"} online
+            </span>
+            <span style={{ fontSize: 13, color: "#6b6b8a", marginLeft: 4 }}>— type your own name below to run on your laptop</span>
           </>
         ) : (
           <>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#3a3a5a", flexShrink: 0 }} />
-            <span style={{ fontSize: 14, color: "#6b6b8a" }}>No agents online — start the agent app first</span>
+            <span style={{ fontSize: 14, color: "#6b6b8a" }}>No agents online — open the agent app on your laptop first</span>
           </>
         )}
       </div>
@@ -291,18 +294,10 @@ export default function ScrapePage() {
         <div style={{ height: 1, background: "#1e1e2e", margin: "4px 0 20px" }} />
 
         {/* Agent + IG account + Your name */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-          <div style={{ flex: 1 }}>
-            <label style={labelStyle}>Run on (agent laptop)</label>
-            <select value={agent} onChange={e => setAgent(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              <option value="">{onlineAgents.length ? "Select agent..." : "(no agents online)"}</option>
-              {onlineAgents.map(a => <option key={a.label} value={a.label}>🟢 {a.label}</option>)}
-            </select>
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={labelStyle}>Your name</label>
-            <input value={yourName} onChange={e => setYourName(e.target.value)} placeholder="e.g. Priya" style={inputStyle} />
-          </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Your name</label>
+          <input value={yourName} onChange={e => setYourName(e.target.value)} placeholder="e.g. Priya" style={inputStyle} />
+          <div style={{ fontSize: 12, color: "#6b6b8a", marginTop: 6 }}>Job will run on your own laptop. Make sure your agent app is open and running.</div>
         </div>
 
         <div style={{ marginBottom: 20 }}>
