@@ -32,7 +32,7 @@ const CATEGORIES = Object.keys(HASHTAG_LIBRARY);
 
 export default function ScrapePage() {
   const [agents, setAgents] = useState<{ label: string; last_seen: string }[]>([]);
-  const [scrapeType, setScrapeType] = useState("hashtag");
+  const [scrapeType, setScrapeType] = useState<"hashtag"|"reference"|"trained_feed">("hashtag");
   const [agent, setAgent] = useState("");
   const [igAccount, setIgAccount] = useState("");
   const [yourName, setYourName] = useState("");
@@ -81,7 +81,7 @@ export default function ScrapePage() {
     if (!agent) { setError("Select an agent first."); return; }
     if (!igAccount.trim()) { setError("Enter an Instagram account."); return; }
     if (scrapeType === "hashtag" && !hashtags.trim()) { setError("Enter at least one hashtag."); return; }
-    if (scrapeType === "reference_creator" && !seeds.trim()) { setError("Enter at least one seed creator username."); return; }
+    if (scrapeType === "reference" && !seeds.trim()) { setError("Enter at least one seed creator username."); return; }
 
     setSubmitting(true);
     const ig = igAccount.trim().replace(/^@/, "");
@@ -95,7 +95,7 @@ export default function ScrapePage() {
         min_followers: parseInt(minFollowers) || 0,
         enrich: enrich,
       };
-    } else if (scrapeType === "reference_creator") {
+    } else if (scrapeType === "reference") {
       params = {
         ...params,
         seeds: seeds.split(/[,\s]+/).map(s => s.trim().replace(/^@/, "")).filter(Boolean),
@@ -161,11 +161,11 @@ export default function ScrapePage() {
         <div style={{ marginBottom: 24 }}>
           <label style={labelStyle}>Scrape Type</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {[
-              { value: "hashtag", label: "# Hashtag Search" },
-              { value: "reference_creator", label: "👤 Reference Creator" },
-              { value: "trained_feed", label: "🎯 Trained Feed" },
-            ].map(t => (
+            {([
+              { value: "hashtag" as const, label: "# Hashtag Search" },
+              { value: "reference" as const, label: "👤 Reference Creator" },
+              { value: "trained_feed" as const, label: "🎯 Trained Feed" },
+            ]).map(t => (
               <button key={t.value} onClick={() => setScrapeType(t.value)} style={{
                 padding: "9px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
                 background: scrapeType === t.value ? "#6366f1" : "#0d0d14",
@@ -215,7 +215,7 @@ export default function ScrapePage() {
         )}
 
         {/* REFERENCE CREATOR */}
-        {scrapeType === "reference_creator" && (
+        {scrapeType === "reference" && (
           <>
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Seed creator username(s)</label>

@@ -68,7 +68,7 @@ export default function JobsPage() {
               <div key={job.id} style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 10, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: style.dot, flexShrink: 0, boxShadow: s === "running" ? `0 0 8px ${style.dot}` : "none" }} />
                 <div style={{ background: "#1a1a28", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#8888cc", fontWeight: 600, flexShrink: 0 }}>
-                  {job.type === "hashtag" ? "# Hashtag" : "🎯 Feed"}
+                  {job.type === "hashtag" ? "# Hashtag" : job.type === "reference" ? "👤 Reference" : "🎯 Feed"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: "#e2e2f0", fontWeight: 500 }}>
