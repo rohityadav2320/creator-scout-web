@@ -41,6 +41,7 @@ export default function CreatorsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [minFol, setMinFol] = useState("");
+  const [maxFol, setMaxFol] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const load = async () => {
@@ -66,7 +67,8 @@ export default function CreatorsPage() {
     const q = search.toLowerCase();
     const matchSearch = !q || c.username?.toLowerCase().includes(q) || c.bio?.toLowerCase().includes(q) || c.category?.toLowerCase().includes(q);
     const matchStatus = statusFilter === "All" || c.status === statusFilter;
-    const matchFol = !minFol || (c.followers || 0) >= parseInt(minFol);
+    const matchFol = (!minFol || (c.followers || 0) >= parseInt(minFol)) &&
+                     (!maxFol || (c.followers || 0) <= parseInt(maxFol));
     return matchSearch && matchStatus && matchFol;
   });
 
@@ -177,6 +179,8 @@ export default function CreatorsPage() {
           {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <input value={minFol} onChange={e => setMinFol(e.target.value)} placeholder="Min followers" type="number"
+          style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 8, padding: "9px 14px", color: "#e2e2f0", fontSize: 14, outline: "none", width: 140 }} />
+        <input value={maxFol} onChange={e => setMaxFol(e.target.value)} placeholder="Max followers" type="number"
           style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 8, padding: "9px 14px", color: "#e2e2f0", fontSize: 14, outline: "none", width: 140 }} />
       </div>
 
