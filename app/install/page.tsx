@@ -4,9 +4,7 @@ import { useState } from "react";
 const MAC_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Mac";
 const WIN_LINK = "https://github.com/rohityadav2320/creator-scout-agent/releases/latest/download/CreatorScout-Agent-Windows.exe";
 
-const MAC_COMMANDS = `xattr -cr ~/Desktop/CreatorScout/CreatorScout-Agent-Mac
-chmod +x ~/Desktop/CreatorScout/CreatorScout-Agent-Mac
-cd ~/Desktop/CreatorScout && ./CreatorScout-Agent-Mac`;
+const MAC_COMMANDS = `F=$(ls ~/Downloads/CreatorScout-Agent-Mac* ~/Desktop/CreatorScout-Agent-Mac* ~/Desktop/CreatorScout/CreatorScout-Agent-Mac* 2>/dev/null | head -1); xattr -cr "$F"; chmod +x "$F"; "$F"`;
 
 function CopyBlock({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -72,36 +70,32 @@ export default function InstallPage() {
           If Google warns "can&apos;t scan this file" — click <b style={{ color: "#fff" }}>Download anyway</b>. That&apos;s normal.</span>
         } />
 
-        <Step num={2} title="Create a folder on your Desktop" desc={
-          <span>On your Desktop, make a new folder called <b style={{ color: "#fff" }}>CreatorScout</b>.<br />
-          Move the downloaded file <b style={{ color: "#fff" }}>CreatorScout-Agent-Mac</b> into that folder.</span>
-        } />
-
-        <Step num={3} title="Unblock and run (Terminal)" desc={
+        <Step num={2} title="Unblock and run (Terminal)" desc={
           <span>
+            Leave the file in <b style={{ color: "#fff" }}>Downloads</b> — no need to move it anywhere.<br />
             Open <b style={{ color: "#fff" }}>Terminal</b> (Cmd+Space → type Terminal → Enter).<br />
-            Copy all 3 lines below and paste into Terminal, then press Enter:
+            Copy the command below, paste into Terminal, press Enter:
             <CopyBlock text={MAC_COMMANDS} />
             <br />
-            The first two lines unblock the app (one-time only). The third line runs it.
+            This one command finds the app, unblocks it, and runs it — even if it&apos;s named &quot;(1)&quot; from re-downloading.
           </span>
         } />
 
-        <Step num={4} title="Type your name when asked" desc={
+        <Step num={3} title="Type your name when asked" desc={
           <span>
             The app will ask: <span style={{ background: "#0d0d14", border: "1px solid #1e1e2e", borderRadius: 4, padding: "2px 8px", fontFamily: "monospace", fontSize: 12, color: "#a3e635" }}>Enter your name:</span><br /><br />
             Type your name (e.g. <b style={{ color: "#fff" }}>Priya</b>) and press Enter. It&apos;s saved — you won&apos;t be asked again.
           </span>
         } />
 
-        <Step num={5} title="First run downloads the browser" desc={
+        <Step num={4} title="First run downloads the browser" desc={
           <span>First time only — it downloads Chrome (~150 MB) automatically. Wait ~2 min. When you see <b style={{ color: "#fff" }}>"Watching for jobs…"</b> it&apos;s ready.<br /><br />
           Keep this Terminal window open while scraping. Minimise is fine, don&apos;t close it.</span>
         } />
 
-        <Step num={6} title="Log into Instagram (first scrape only)" desc={
+        <Step num={5} title="Log into Instagram (first scrape only)" desc={
           <span>When the first scrape runs, a Chrome window opens — log in with your Instagram account. Login is saved on your laptop only, never shared.<br /><br />
-          ✅ After this, everything is automatic. Next time just run line 3 from Terminal.</span>
+          ✅ After this, everything is automatic. Next time, just paste the same command to start.</span>
         } />
       </div>
 
