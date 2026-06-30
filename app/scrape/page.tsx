@@ -36,6 +36,7 @@ export default function ScrapePage() {
   const [agent, setAgent] = useState("");
   const [igAccount, setIgAccount] = useState("");
   const [yourName, setYourName] = useState("");
+  const [nameLocked, setNameLocked] = useState(false);
 
   // Hashtag search
   const [category, setCategory] = useState("");
@@ -68,6 +69,27 @@ export default function ScrapePage() {
     load();
     const t = setInterval(load, 8000);
     return () => clearInterval(t);
+  }, []);
+
+  // Auto-detect the agent running on THIS laptop and lock the name to it.
+  // The agent runs a tiny identity server on localhost; if we can read it,
+  // this browser is on the same machine as that agent.
+  useEffect(() => {
+    const detect = async () => {
+      for (const port of [17613, 17614, 17615]) {
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 1200);
+          const r = await fetch(`http://127.0.0.1:${port}/whoami`, { signal: ctrl.signal });
+          clearTimeout(t);
+          if (r.ok) {
+            const d = await r.json();
+            if (d && d.name) { setYourName(d.name); setNameLocked(true); return; }
+          }
+        } catch { /* no agent on this port — keep trying */ }
+      }
+    };
+    detect();
   }, []);
 
   // Auto-fill hashtags when category changes
@@ -298,11 +320,21 @@ export default function ScrapePage() {
 
         <div style={{ height: 1, background: "#1e1e2e", margin: "4px 0 20px" }} />
 
-        {/* Agent + IG account + Your name */}
+        {/* Your name — auto-detected & locked to the agent on THIS laptop */}
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Your name</label>
-          <input value={yourName} onChange={e => setYourName(e.target.value)} placeholder="e.g. Priya" style={inputStyle} />
-          <div style={{ fontSize: 12, color: "#6b6b8a", marginTop: 6 }}>Job will run on your own laptop. Make sure your agent app is open and running.</div>
+          {nameLocked ? (
+            <>
+              <input value={yourName} readOnly disabled
+                style={{ ...inputStyle, background: "#0a1a0a", border: "1px solid #1a5a1a", color: "#a3e635", cursor: "not-allowed" }} />
+              <div style={{ fontSize: 12, color: "#a3e635", marginTop: 6 }}>🟢 Detected your agent on this laptop — locked to <b>{yourName}</b>. Scrapes run only on your device.</div>
+            </>
+          ) : (
+            <>
+              <input value={yourName} onChange={e => setYourName(e.target.value)} placeholder="e.g. Priya" style={inputStyle} />
+              <div style={{ fontSize: 12, color: "#fbbf24", marginTop: 6 }}>⚠️ No agent detected on this laptop. Open your agent app first, then refresh this page — your name will fill in automatically.</div>
+            </>
+          )}
         </div>
 
         <div style={{ marginBottom: 20 }}>
