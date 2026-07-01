@@ -2,15 +2,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-const STATUS_OPTIONS = ["To Contact", "Contacted", "Replied", "Deal Done", "Rejected"];
-const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  "To Contact": { bg: "#1a1a0f", color: "#fbbf24" },
-  "Contacted":  { bg: "#0f1a2a", color: "#60a5fa" },
-  "Replied":    { bg: "#1a0f2a", color: "#c084fc" },
-  "Deal Done":  { bg: "#0f2a0f", color: "#a3e635" },
-  "Rejected":   { bg: "#2a0f0f", color: "#f87171" },
-};
-
 type Creator = {
   reel_url: string;
   username: string;
@@ -19,7 +10,6 @@ type Creator = {
   contact_email: string;
   bio: string;
   category: string;
-  status: string;
   notes: string;
   scraped_by: string;
   scraped_from: string;
@@ -34,13 +24,12 @@ function fmt(n: number) {
 
 export default function CreatorsPage() {
   const [all, setAll] = useState<Creator[]>([]);
-  const [edited, setEdited] = useState<Record<string, { status?: string; notes?: string }>>({});
+  const [edited, setEdited] = useState<Record<string, { notes?: string }>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [sheetMsg, setSheetMsg] = useState("");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
   const [minFol, setMinFol] = useState("");
   const [maxFol, setMaxFol] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -48,7 +37,7 @@ export default function CreatorsPage() {
   const load = async () => {
     const { data } = await supabase
       .from("reels")
-      .select("reel_url,username,followers,engagement_rate,contact_email,bio,category,status,notes,scraped_by,scraped_from")
+      .select("reel_url,username,followers,engagement_rate,contact_email,bio,category,notes,scraped_by,scraped_from")
       .order("first_scraped", { ascending: false })
       .limit(5000);
     if (data) {
@@ -57,7 +46,7 @@ export default function CreatorsPage() {
         if (seen.has(c.username)) return false;
         seen.add(c.username); return true;
       });
-      setAll(unique.map(c => ({ ...c, status: c.status || "To Contact", notes: c.notes || "" })));
+      setAll(unique.map(c => ({ ...c, notes: c.notes || "" })));
     }
     setLoading(false);
   };
@@ -67,18 +56,14 @@ export default function CreatorsPage() {
   const filtered = all.filter(c => {
     const q = search.toLowerCase();
     const matchSearch = !q || c.username?.toLowerCase().includes(q) || c.bio?.toLowerCase().includes(q) || c.category?.toLowerCase().includes(q);
-    const matchStatus = statusFilter === "All" || c.status === statusFilter;
     const matchFol = (!minFol || (c.followers || 0) >= parseInt(minFol)) &&
                      (!maxFol || (c.followers || 0) <= parseInt(maxFol));
-    return matchSearch && matchStatus && matchFol;
+    return matchSearch && matchFol;
   });
 
-  // Pipeline counts
-  const counts = STATUS_OPTIONS.reduce((acc, s) => ({ ...acc, [s]: all.filter(c => (c.status || "To Contact") === s).length }), {} as Record<string, number>);
+  const getVal = (c: Creator, field: "notes") => edited[c.reel_url]?.[field] ?? c[field];
 
-  const getVal = (c: Creator, field: "status" | "notes") => edited[c.reel_url]?.[field] ?? c[field];
-
-  const handleEdit = (reel_url: string, field: "status" | "notes", value: string) => {
+  const handleEdit = (reel_url: string, field: "notes", value: string) => {
     setEdited(prev => ({ ...prev, [reel_url]: { ...prev[reel_url], [field]: value } }));
   };
 
@@ -87,7 +72,7 @@ export default function CreatorsPage() {
     if (!changes.length) { setSaveMsg("No changes to save."); return; }
     setSaving(true);
     for (const c of changes) {
-      await supabase.from("reels").update({ status: c.status, notes: c.notes }).eq("reel_url", c.reel_url);
+      await supabase.from("reels").update({ notes: c.notes }).eq("reel_url", c.reel_url);
     }
     setSaving(false);
     setEdited({});
@@ -118,7 +103,7 @@ export default function CreatorsPage() {
   };
 
   const downloadCSV = () => {
-    const headers = ["username", "followers", "engagement_rate", "status", "notes", "bio", "category", "contact_email", "reel_url"];
+    const headers = ["username", "followers", "engagement_rate", "notes", "bio", "category", "contact_email", "reel_url"];
     const rows = filtered.map(c => headers.map(h => JSON.stringify((c as Record<string, unknown>)[h] ?? "")).join(","));
     const csv = [headers.join(","), ...rows].join("\n");
     const a = document.createElement("a");
@@ -156,29 +141,10 @@ export default function CreatorsPage() {
       {saveMsg && <div style={{ background: saveMsg.startsWith("✅") ? "#0f2a0f" : "#2a0f0f", border: `1px solid ${saveMsg.startsWith("✅") ? "#166534" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: saveMsg.startsWith("✅") ? "#a3e635" : "#f87171" }}>{saveMsg}</div>}
       {sheetMsg && <div style={{ background: sheetMsg.startsWith("✅") ? "#0f2a0f" : "#2a0f0f", border: `1px solid ${sheetMsg.startsWith("✅") ? "#166534" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: sheetMsg.startsWith("✅") ? "#a3e635" : "#f87171" }}>{sheetMsg}</div>}
 
-      {/* Pipeline counts */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
-        {STATUS_OPTIONS.map(s => {
-          const sc = STATUS_COLORS[s];
-          return (
-            <div key={s} onClick={() => setStatusFilter(statusFilter === s ? "All" : s)}
-              style={{ background: sc.bg, border: `1px solid ${statusFilter === s ? sc.color : "#1e1e2e"}`, borderRadius: 10, padding: "12px 18px", cursor: "pointer", minWidth: 110 }}>
-              <div style={{ fontSize: 11, color: sc.color, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{s}</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#fff" }}>{counts[s] || 0}</div>
-            </div>
-          );
-        })}
-      </div>
-
       {/* Filters */}
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔎 Search username, bio, category..."
           style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 8, padding: "9px 14px", color: "#e2e2f0", fontSize: 14, outline: "none", flex: 1, minWidth: 220 }} />
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 8, padding: "9px 14px", color: "#e2e2f0", fontSize: 14, outline: "none", cursor: "pointer" }}>
-          <option value="All">All statuses</option>
-          {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
         <input value={minFol} onChange={e => setMinFol(e.target.value)} placeholder="Min followers" type="number"
           style={{ background: "#111118", border: "1px solid #1e1e2e", borderRadius: 8, padding: "9px 14px", color: "#e2e2f0", fontSize: 14, outline: "none", width: 140 }} />
         <input value={maxFol} onChange={e => setMaxFol(e.target.value)} placeholder="Max followers" type="number"
@@ -201,29 +167,20 @@ export default function CreatorsPage() {
                   <input type="checkbox" onChange={e => setSelected(e.target.checked ? new Set(filtered.map(c => c.reel_url)) : new Set())}
                     checked={selected.size === filtered.length && filtered.length > 0} style={{ cursor: "pointer" }} />
                 </th>
-                {["Status", "Username", "Profile", "Reel", "Followers", "ER %", "Email", "Category", "Notes", "Agent", "IG Account"].map(h => (
+                {["Username", "Profile", "Reel", "Followers", "ER %", "Email", "Category", "Notes", "Agent", "IG Account"].map(h => (
                   <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: 11, color: "#6b6b8a", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={12} style={{ padding: 32, textAlign: "center", color: "#6b6b8a", fontSize: 14 }}>No creators match filters.</td></tr>
+                <tr><td colSpan={11} style={{ padding: 32, textAlign: "center", color: "#6b6b8a", fontSize: 14 }}>No creators match filters.</td></tr>
               ) : filtered.map((c, i) => {
-                const status = getVal(c, "status") || "To Contact";
                 const notes = getVal(c, "notes");
-                const sc = STATUS_COLORS[status] || STATUS_COLORS["To Contact"];
                 return (
                   <tr key={c.reel_url} style={{ borderBottom: "1px solid #15151f", background: i % 2 === 0 ? "transparent" : "#0d0d14" }}>
                     <td style={{ padding: "10px 14px" }}>
                       <input type="checkbox" checked={selected.has(c.reel_url)} onChange={() => toggleSelect(c.reel_url)} style={{ cursor: "pointer" }} />
-                    </td>
-                    {/* Status */}
-                    <td style={{ padding: "10px 14px" }}>
-                      <select value={status} onChange={e => handleEdit(c.reel_url, "status", e.target.value)}
-                        style={{ background: sc.bg, border: `1px solid ${sc.color}40`, borderRadius: 6, padding: "3px 8px", color: sc.color, fontSize: 12, fontWeight: 600, cursor: "pointer", outline: "none" }}>
-                        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
                     </td>
                     {/* Username */}
                     <td style={{ padding: "10px 14px" }}>
