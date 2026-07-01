@@ -62,9 +62,8 @@ export default function ScrapePage() {
       const data = await r.json();
       if (r.ok && data.sets?.length) {
         setAiSets(data.sets);
-        // auto-fill Keywords with the first (Best mix) set
-        setHashtags(data.sets[0].tags.join(", "));
-        setUsedSet(data.sets[0].label);
+        // auto-fill the right field with the first (Best mix) set
+        useSet(data.sets[0]);
       } else {
         setAiError(data.error || "Could not generate hashtags.");
       }
@@ -75,7 +74,9 @@ export default function ScrapePage() {
   };
 
   const useSet = (s: { label: string; tags: string[] }) => {
-    setHashtags(s.tags.join(", "));
+    const value = s.tags.join(", ");
+    if (scrapeType === "trained_feed") setFeedHashtags(value);
+    else setHashtags(value);
     setUsedSet(s.label);
   };
 
@@ -201,6 +202,58 @@ export default function ScrapePage() {
   };
   const labelStyle = { fontSize: 13, color: "#9999bb", fontWeight: 500, display: "block" as const, marginBottom: 6 };
 
+  const setEmoji = (label: string, i: number) => {
+    if (i === 0) return "⭐ ";
+    if (/trending/i.test(label)) return "🔥 ";
+    if (/language|regional|india/i.test(label)) return "🌐 ";
+    return "";
+  };
+
+  const renderAiBox = (targetLabel: string) => (
+    <div style={{ marginBottom: 20, background: "#0f0d1a", border: "1px solid #2a2140", borderRadius: 10, padding: 16 }}>
+      <label style={{ ...labelStyle, color: "#c084fc" }}>✨ Describe the creators — AI finds the hashtags</label>
+      <div style={{ display: "flex", gap: 10 }}>
+        <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") generateHashtags(); }}
+          placeholder="e.g. creators who explain business on a whiteboard"
+          style={{ ...inputStyle, flex: 1 }} />
+        <button onClick={generateHashtags} disabled={aiLoading} style={{
+          background: aiLoading ? "#3a2a5a" : "#8b5cf6", border: "none", borderRadius: 8,
+          padding: "0 18px", color: "#fff", fontSize: 13, fontWeight: 600,
+          cursor: aiLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
+        }}>{aiLoading ? "Thinking…" : "✨ Generate"}</button>
+      </div>
+      {aiError && <div style={{ fontSize: 12, color: "#f87171", marginTop: 8 }}>{aiError}</div>}
+      {aiSets.length === 0 && !aiError && (
+        <div style={{ fontSize: 11, color: "#6b6b8a", marginTop: 8 }}>Type what kind of videos/creators you want — AI gives you multiple sets to choose from.</div>
+      )}
+      {aiSets.length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ fontSize: 11, color: "#8888aa" }}>Tap a set to use it in the {targetLabel} below:</div>
+          {aiSets.map((s, i) => {
+            const active = usedSet === s.label;
+            return (
+              <div key={i} onClick={() => useSet(s)} style={{
+                background: active ? "#1a1030" : "#12101c",
+                border: `1px solid ${active ? "#8b5cf6" : "#2a2140"}`,
+                borderRadius: 8, padding: "10px 12px", cursor: "pointer",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? "#c084fc" : "#a99bd6" }}>
+                    {setEmoji(s.label, i)}{s.label}
+                  </span>
+                  {active && <span style={{ fontSize: 10, color: "#a3e635", fontWeight: 600 }}>✓ in use</span>}
+                  <span style={{ fontSize: 10, color: "#6b6b8a", marginLeft: "auto" }}>{s.tags.length} tags</span>
+                </div>
+                <div style={{ fontSize: 11.5, color: "#b8b8d0", lineHeight: 1.5 }}>{s.tags.join(", ")}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div style={{ maxWidth: 680 }}>
       <div style={{ marginBottom: 32 }}>
@@ -257,49 +310,7 @@ export default function ScrapePage() {
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            {/* AI hashtag generator */}
-            <div style={{ marginBottom: 20, background: "#0f0d1a", border: "1px solid #2a2140", borderRadius: 10, padding: 16 }}>
-              <label style={{ ...labelStyle, color: "#c084fc" }}>✨ Describe the creators — AI finds the hashtags</label>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter") generateHashtags(); }}
-                  placeholder="e.g. creators who explain business on a whiteboard"
-                  style={{ ...inputStyle, flex: 1 }} />
-                <button onClick={generateHashtags} disabled={aiLoading} style={{
-                  background: aiLoading ? "#3a2a5a" : "#8b5cf6", border: "none", borderRadius: 8,
-                  padding: "0 18px", color: "#fff", fontSize: 13, fontWeight: 600,
-                  cursor: aiLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
-                }}>{aiLoading ? "Thinking…" : "✨ Generate"}</button>
-              </div>
-              {aiError && <div style={{ fontSize: 12, color: "#f87171", marginTop: 8 }}>{aiError}</div>}
-              {aiSets.length === 0 && !aiError && (
-                <div style={{ fontSize: 11, color: "#6b6b8a", marginTop: 8 }}>Type what kind of videos/creators you want — AI gives you multiple sets to choose from.</div>
-              )}
-              {aiSets.length > 0 && (
-                <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={{ fontSize: 11, color: "#8888aa" }}>Tap a set to use it in the Keywords box below:</div>
-                  {aiSets.map((s, i) => {
-                    const active = usedSet === s.label;
-                    return (
-                      <div key={i} onClick={() => useSet(s)} style={{
-                        background: active ? "#1a1030" : "#12101c",
-                        border: `1px solid ${active ? "#8b5cf6" : "#2a2140"}`,
-                        borderRadius: 8, padding: "10px 12px", cursor: "pointer",
-                      }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? "#c084fc" : "#a99bd6" }}>
-                            {i === 0 ? "⭐ " : ""}{s.label}
-                          </span>
-                          {active && <span style={{ fontSize: 10, color: "#a3e635", fontWeight: 600 }}>✓ in use</span>}
-                          <span style={{ fontSize: 10, color: "#6b6b8a", marginLeft: "auto" }}>{s.tags.length} tags</span>
-                        </div>
-                        <div style={{ fontSize: 11.5, color: "#b8b8d0", lineHeight: 1.5 }}>{s.tags.join(", ")}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            {renderAiBox("Keywords box")}
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Keywords / Hashtags</label>
               <textarea value={hashtags} onChange={e => setHashtags(e.target.value)}
@@ -375,6 +386,7 @@ export default function ScrapePage() {
               Opens your trained Instagram account&apos;s feed in the browser and scrolls to collect creators.
               Train your account on your phone by watching niche reels — the algorithm remembers.
             </div>
+            {renderAiBox("Filter by hashtags box")}
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Filter by hashtags (optional)</label>
               <input value={feedHashtags} onChange={e => setFeedHashtags(e.target.value)}
