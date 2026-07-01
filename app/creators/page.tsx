@@ -88,7 +88,7 @@ export default function CreatorsPage() {
       const r = await fetch("/api/sheet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creators: toSend.map(c => ({ name: c.username, username: c.username, email: c.contact_email || "", language: "" })) }),
+        body: JSON.stringify({ creators: toSend.map(c => ({ name: c.username, username: c.username, profile_url: `https://instagram.com/${c.username}`, email: c.contact_email || "", language: "" })) }),
       });
       const data = await r.json();
       if (r.ok) {
