@@ -46,9 +46,11 @@ export default function ScrapePage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [aiSets, setAiSets] = useState<{ label: string; tags: string[] }[]>([]);
+  const [usedSet, setUsedSet] = useState("");
 
   const generateHashtags = async () => {
-    setAiError("");
+    setAiError(""); setAiSets([]); setUsedSet("");
     if (!aiPrompt.trim()) { setAiError("Describe the creators you want first."); return; }
     setAiLoading(true);
     try {
@@ -58,8 +60,11 @@ export default function ScrapePage() {
         body: JSON.stringify({ description: aiPrompt }),
       });
       const data = await r.json();
-      if (r.ok && data.hashtags) {
-        setHashtags(data.hashtags);
+      if (r.ok && data.sets?.length) {
+        setAiSets(data.sets);
+        // auto-fill Keywords with the first (Best mix) set
+        setHashtags(data.sets[0].tags.join(", "));
+        setUsedSet(data.sets[0].label);
       } else {
         setAiError(data.error || "Could not generate hashtags.");
       }
@@ -67,6 +72,11 @@ export default function ScrapePage() {
       setAiError("Could not reach AI. Try again.");
     }
     setAiLoading(false);
+  };
+
+  const useSet = (s: { label: string; tags: string[] }) => {
+    setHashtags(s.tags.join(", "));
+    setUsedSet(s.label);
   };
 
   // Reference creator
@@ -262,7 +272,33 @@ export default function ScrapePage() {
                 }}>{aiLoading ? "Thinking…" : "✨ Generate"}</button>
               </div>
               {aiError && <div style={{ fontSize: 12, color: "#f87171", marginTop: 8 }}>{aiError}</div>}
-              <div style={{ fontSize: 11, color: "#6b6b8a", marginTop: 8 }}>Type what kind of videos/creators you want — hashtags appear below automatically.</div>
+              {aiSets.length === 0 && !aiError && (
+                <div style={{ fontSize: 11, color: "#6b6b8a", marginTop: 8 }}>Type what kind of videos/creators you want — AI gives you multiple sets to choose from.</div>
+              )}
+              {aiSets.length > 0 && (
+                <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 11, color: "#8888aa" }}>Tap a set to use it in the Keywords box below:</div>
+                  {aiSets.map((s, i) => {
+                    const active = usedSet === s.label;
+                    return (
+                      <div key={i} onClick={() => useSet(s)} style={{
+                        background: active ? "#1a1030" : "#12101c",
+                        border: `1px solid ${active ? "#8b5cf6" : "#2a2140"}`,
+                        borderRadius: 8, padding: "10px 12px", cursor: "pointer",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? "#c084fc" : "#a99bd6" }}>
+                            {i === 0 ? "⭐ " : ""}{s.label}
+                          </span>
+                          {active && <span style={{ fontSize: 10, color: "#a3e635", fontWeight: 600 }}>✓ in use</span>}
+                          <span style={{ fontSize: 10, color: "#6b6b8a", marginLeft: "auto" }}>{s.tags.length} tags</span>
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "#b8b8d0", lineHeight: 1.5 }}>{s.tags.join(", ")}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Keywords / Hashtags</label>
