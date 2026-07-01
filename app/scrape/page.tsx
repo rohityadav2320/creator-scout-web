@@ -42,6 +42,32 @@ export default function ScrapePage() {
   const [category, setCategory] = useState("");
   const [hashtags, setHashtags] = useState("");
   const [enrich, setEnrich] = useState(true);
+  // AI hashtag generator
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  const generateHashtags = async () => {
+    setAiError("");
+    if (!aiPrompt.trim()) { setAiError("Describe the creators you want first."); return; }
+    setAiLoading(true);
+    try {
+      const r = await fetch("/api/hashtags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: aiPrompt }),
+      });
+      const data = await r.json();
+      if (r.ok && data.hashtags) {
+        setHashtags(data.hashtags);
+      } else {
+        setAiError(data.error || "Could not generate hashtags.");
+      }
+    } catch {
+      setAiError("Could not reach AI. Try again.");
+    }
+    setAiLoading(false);
+  };
 
   // Reference creator
   const [seeds, setSeeds] = useState("");
@@ -220,6 +246,23 @@ export default function ScrapePage() {
                 <option value="">— pick a category —</option>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+            </div>
+            {/* AI hashtag generator */}
+            <div style={{ marginBottom: 20, background: "#0f0d1a", border: "1px solid #2a2140", borderRadius: 10, padding: 16 }}>
+              <label style={{ ...labelStyle, color: "#c084fc" }}>✨ Describe the creators — AI finds the hashtags</label>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") generateHashtags(); }}
+                  placeholder="e.g. creators who explain business on a whiteboard"
+                  style={{ ...inputStyle, flex: 1 }} />
+                <button onClick={generateHashtags} disabled={aiLoading} style={{
+                  background: aiLoading ? "#3a2a5a" : "#8b5cf6", border: "none", borderRadius: 8,
+                  padding: "0 18px", color: "#fff", fontSize: 13, fontWeight: 600,
+                  cursor: aiLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
+                }}>{aiLoading ? "Thinking…" : "✨ Generate"}</button>
+              </div>
+              {aiError && <div style={{ fontSize: 12, color: "#f87171", marginTop: 8 }}>{aiError}</div>}
+              <div style={{ fontSize: 11, color: "#6b6b8a", marginTop: 8 }}>Type what kind of videos/creators you want — hashtags appear below automatically.</div>
             </div>
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Keywords / Hashtags</label>
